@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import ChatVista from '../components/Chat/ChatVista'; // 1. IMPORTANTE: Importar el componente
+import ChatVista from '../components/chat/ChatVista'; // 1. IMPORTANTE: Importar el componente
 
 const Layout = () => {
   return (
