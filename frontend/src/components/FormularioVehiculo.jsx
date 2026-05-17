@@ -15,13 +15,14 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
         matricula: vehiculoAEditar.matricula,
         marca: vehiculoAEditar.marca,
         modelo: vehiculoAEditar.modelo,
-        año: vehiculoAEditar.anio,
+        año: vehiculoAEditar.anio, 
         kilometraje: vehiculoAEditar.kilometraje
       });
     } else {
       setFormData({ matricula: '', marca: '', modelo: '', año: '', kilometraje: '' });
       setFile(null);
     }
+    setError(null);
   }, [vehiculoAEditar, isOpen]);
 
   const handleSubmit = async (e) => {
@@ -43,7 +44,17 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
           });
         }
       } else {
+        // Creación del vehículo
         await api.post('/vehiculos', formData);
+        
+        // Si al crearlo también ha adjuntado una foto
+        if (file) {
+          const formDataImg = new FormData();
+          formDataImg.append('imagen', file);
+          await api.post(`/vehiculos/upload-image/${formData.matricula}`, formDataImg, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
       }
       
       onSuccess();
@@ -60,56 +71,36 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 p-6 sm:p-8 max-h-[90vh] overflow-y-auto scrollbar-hide">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-gray-100 p-6 sm:p-8 max-h-[90vh] overflow-y-auto scrollbar-hide relative">
         
-        <input className="w-full p-2 border rounded mb-2" placeholder="Matrícula" 
-               value={formData.matricula} onChange={e => setFormData({...formData, matricula: e.target.value})} 
-               required disabled={!!vehiculoAEditar} />
-        
-        <input className="w-full p-2 border rounded mb-2" placeholder="Marca" 
-               value={formData.marca} onChange={e => setFormData({...formData, marca: e.target.value})} required />
-        
-        <input className="w-full p-2 border rounded mb-2" placeholder="Modelo" 
-               value={formData.modelo} onChange={e => setFormData({...formData, modelo: e.target.value})} required />
-        
-        <input className="w-full p-2 border rounded mb-2" type="number" placeholder="Año" 
-               value={formData.año} onChange={e => setFormData({...formData, año: e.target.value})} required />
-        
-        <input className="w-full p-2 border rounded mb-4" type="number" placeholder="Kilometraje" 
-               value={formData.kilometraje} onChange={e => setFormData({...formData, kilometraje: e.target.value})} required />
+        {/* BOTÓN CERRAR */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-[#1A365D] transition-colors"
+        >
+          ✕
+        </button>
 
-        {/* ESTE ES EL NUEVO DISEÑO */}
-        <div className="mb-4 border-t pt-4">
-            <label className="text-xs text-gray-500 mb-2 block">Foto del vehículo:</label>
-            <label 
-                htmlFor="file-upload" 
-                className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm transition text-center block w-full border border-dashed border-gray-400"
-            >
-                {file ? file.name : "Seleccionar imagen"}
-            </label>
-            <input 
-                id="file-upload" 
-                type="file" 
-                onChange={e => setFile(e.target.files[0])} 
-                className="hidden" 
-            />
-        </div>
-        
-        <div className="flex gap-2">
-          <button type="submit" className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-medium">Guardar</button>
-          <button type="button" onClick={onClose} className="flex-1 bg-gray-200 p-2 rounded hover:bg-gray-300 font-medium">Cancelar</button>
+        {/* CABECERA */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-[#1A365D]">
+            {vehiculoAEditar ? 'Editar Vehículo' : 'Añadir Vehículo'}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {vehiculoAEditar ? 'Modifica los datos o sube una nueva foto.' : 'Registra un nuevo vehículo en tu garaje.'}
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           
           {/* MENSAJE DE ERROR */}
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm font-bold">
+            <div className="bg-red-50 border border-red-100 text-red-600 p-3 rounded-xl text-sm font-bold text-center">
                 {error}
             </div>
           )}
 
-          {/* DATOS BÁSICOS */}
+          {/* MATRÍCULA */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Matrícula</label>
             <input 
@@ -125,6 +116,7 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
             />
           </div>
 
+          {/* MARCA Y MODELO */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-bold text-gray-700 mb-2">Marca</label>
@@ -146,6 +138,7 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
             </div>
           </div>
 
+          {/* AÑO Y KILOMETRAJE */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-bold text-gray-700 mb-2">Año</label>
@@ -167,56 +160,28 @@ const FormularioVehiculo = ({ isOpen, onClose, vehiculoAEditar, onSuccess }) => 
             </div>
           </div>
 
-          {/* SECCIÓN MARKETPLACE (Solo en Edición) */}
-          {vehiculoAEditar && (
-            <div className="mt-6 border border-[#00B4D8]/20 bg-[#e6f7fa]/50 p-5 rounded-2xl">
-              <h4 className="font-bold text-[#1A365D] mb-4 flex items-center gap-2">
-                <span>🛒</span> Opciones de Venta y Perfil
-              </h4>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Precio de venta (€)</label>
-                <input 
-                  type="number" placeholder="Ej: 15000" 
-                  value={formData.precio} 
-                  onChange={e => setFormData({...formData, precio: e.target.value})} 
-                  className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all"
-                />
-              </div>
-              
-              <label className="flex items-center gap-3 mb-5 p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-[#00B4D8] transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={formData.enVenta} 
-                  onChange={e => setFormData({...formData, enVenta: e.target.checked})} 
-                  className="w-5 h-5 text-[#00B4D8] bg-gray-100 border-gray-300 rounded focus:ring-[#00B4D8] focus:ring-2 accent-[#00B4D8]"
-                />
-                <span className="text-sm font-bold text-gray-700 select-none">Publicar en el Marketplace de OpenHood</span>
-              </label>
-
-              <div className="pt-4 border-t border-[#00B4D8]/10">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Foto del vehículo</label>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={e => setFile(e.target.files[0])} 
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2.5 file:px-4
-                    file:rounded-xl file:border-0
-                    file:text-sm file:font-bold
-                    file:bg-[#00B4D8] file:text-white
-                    hover:file:bg-cyan-500 hover:file:cursor-pointer transition-all"
-                />
-              </div>
-            </div>
-          )}
+          {/* FOTO DEL VEHÍCULO */}
+          <div className="pt-2 border-t border-gray-100">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Foto del vehículo (Opcional)</label>
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={e => setFile(e.target.files[0])} 
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2.5 file:px-4
+                file:rounded-xl file:border-0
+                file:text-sm file:font-bold
+                file:bg-[#e6f7fa] file:text-[#00B4D8]
+                hover:file:bg-[#00B4D8] hover:file:text-white hover:file:cursor-pointer transition-all border border-gray-200 rounded-xl p-1 bg-gray-50"
+            />
+          </div>
           
           {/* BOTONES DE ACCIÓN */}
-          <div className="pt-4 flex gap-3 mt-2">
+          <div className="pt-4 flex gap-3">
             <button 
               type="button" 
               onClick={onClose} 
-              className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+              className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
