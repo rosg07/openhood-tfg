@@ -4,7 +4,7 @@ const axios = require('axios');
 
 
 const recomendarTaller = async (req, res) => {
-  const { nombre, direccion, telefono } = req.body;
+  const { nombre, direccion, telefono, email, descripcion } = req.body;
 
   try {
     // 1. Geocodificación: Convertimos la dirección que escribe el usuario en coordenadas
