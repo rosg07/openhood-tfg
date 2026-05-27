@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { tiempoRelativo } from '../utils/DateUtils';
+import { tiempoRelativo } from '../utils/dateUtils';
 import api from '../services/api';
 
 const TemaDetalle = () => {
