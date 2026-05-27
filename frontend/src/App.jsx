@@ -29,7 +29,7 @@ function App() {
           <Route path="/vehiculos/historial/:matricula" element={<HistorialPublico />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/foro" element={<Foro />} />
-          <Route path="/foro/:id" element={<TemaDetalle />} />
+          <Route path="/foro/tema/:id" element={<TemaDetalle />} />
          <Route path="/talleres" element={<DirectorioTalleres />} />
          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
