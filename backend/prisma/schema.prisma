@@ -1,5 +1,5 @@
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -12,51 +12,71 @@ datasource db {
 // ==========================================
 
 model Usuario {
-  id        Int        @id @default(autoincrement())
-  nombre    String
-  email     String     @unique
-  telefono  String?
-  password  String     
-  vehiculos Vehiculo[]
+  id             Int             @id @default(autoincrement())
+  nombre         String
+  email          String          @unique
+  telefono       String?
+  password       String
+  vehiculos      Vehiculo[]
+  mensajes       Mensaje[]
   foroTemas      ForoTema[]
   foroRespuestas ForoRespuesta[]
 }
 
 model Vehiculo {
-  matricula   String    @id
+  matricula   String  @id
   marca       String
   modelo      String
   anio        Int
   kilometraje Int
   fotoUrl     String?
-  
+
+  piezas       Pieza[] // Relación N:M
+  reparaciones Reparacion[] // Relación 1:N
+  mensajes     Mensaje[]
+
   // --- CAMPOS NUEVOS PARA MARKETPLACE ---
-  precio      Float?    // Precio de venta (opcional)
-  enVenta     Boolean   @default(false) // ¿Está en el marketplace?
+  precio  Float? // Precio de venta (opcional)
+  enVenta Boolean @default(false) // ¿Está en el marketplace?
   // --------------------------------------
   
   usuarioId   Int
   usuario     Usuario   @relation(fields: [usuarioId], references: [id])
-  
-  piezas      Pieza[]
+  }
+
+model Taller {
+  id          Int     @id @default(autoincrement())
+  nombre      String
+  direccion   String // Dirección física legible
+  telefono    String?
+  email       String?
+  web         String?
+  descripcion String? @db.Text
+  logo        String? // URL de la imagen del taller
+
+  // Coordenadas para el mapa (Crucial para Facun)
+  latitud  Float
+  longitud Float
+
+  // Metadatos
+  puntuacion Float    @default(0.0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones (Opcional, por si quieres categorizarlos)
+  // servicios Servicio[] 
   reparaciones Reparacion[]
 }
 
-model Taller {
-  id           Int          @id @default(autoincrement())
-  nombre       String
-  reparaciones Reparacion[] // Relación 1:N
-}
-
 model Pieza {
-  id                 Int          @id @default(autoincrement())
+  id                 Int      @id @default(autoincrement())
   nombre             String
   categoria          String
   fecha_instalacion  DateTime
   vida_util_estimada Int
-  
-  vehiculos          Vehiculo[]   // Relación N:M
-  reparaciones       Reparacion[] // Relación N:M
+
+  vehiculos    Vehiculo[] // Relación N:M
+  reparaciones Reparacion[] // Relación N:M
 }
 
 // ==========================================
@@ -67,61 +87,80 @@ model Reparacion {
   id                  Int      @id @default(autoincrement())
   fecha               DateTime
   descripcion         String
-  taller_nombre       String   // Según diagrama
+  taller_nombre       String // Según diagrama
   kilometraje_momento Int
 
   // Relación con Vehiculo (N a 1)
-  vehiculoMatricula   String
-  vehiculo            Vehiculo @relation(fields: [vehiculoMatricula], references: [matricula])
+  vehiculoMatricula String
+  vehiculo          Vehiculo @relation(fields: [vehiculoMatricula], references: [matricula])
 
   // Relación con Taller (N a 1)
-  tallerId            Int?
-  taller              Taller?  @relation(fields: [tallerId], references: [id])
+  tallerId Int?
+  taller   Taller? @relation(fields: [tallerId], references: [id])
 
   // Relación con Pieza (N a M) - Prisma crea la tabla intermedia automáticamente
-  piezas              Pieza[]
+  piezas Pieza[]
 
   // Relación con Presupuesto (1 a 1)
-  presupuesto         Presupuesto?
+  presupuesto Presupuesto?
 }
 
 model Presupuesto {
-  id             Int    @id @default(autoincrement())
+  id             Int     @id @default(autoincrement())
   importe_total  Float
   base_imponible Float
   IVA            Float
   url_pdf        String?
 
   // Relación 1 a 1 con Reparación
-  reparacionId   Int        @unique
-  reparacion     Reparacion @relation(fields: [reparacionId], references: [id], onDelete: Cascade)
+  reparacionId Int        @unique
+  reparacion   Reparacion @relation(fields: [reparacionId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// PARTE DE FACUNDO: ASISTENCIA (Chatbot)
+// ==========================================
+
+model Mensaje {
+  id        Int      @id @default(autoincrement())
+  contenido String   @db.Text
+  rol       String // "user" o "assistant"
+  fecha     DateTime @default(now())
+
+  // Relación con Usuario: para persistir el historial por cuenta
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  // Opcional: Relación con Vehículo por si la consulta es sobre un coche concreto
+  vehiculoMatricula String?
+  vehiculo          Vehiculo? @relation(fields: [vehiculoMatricula], references: [matricula])
 }
 
 model ForoTema {
-  id             Int             @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   titulo         String
-  contenido      String          @db.Text
+  contenido      String   @db.Text
   categoria      String
-  fecha_creacion DateTime        @default(now())
+  fecha_creacion DateTime @default(now())
 
   // Relación con el Usuario que crea el tema (N a 1)
-  usuarioId      Int
-  usuario        Usuario         @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
 
   // Relación con las respuestas (1 a N)
-  respuestas     ForoRespuesta[]
+  respuestas ForoRespuesta[]
 }
 
 model ForoRespuesta {
-  id             Int             @id @default(autoincrement())
-  contenido      String          @db.Text
-  fecha_creacion DateTime        @default(now())
+  id             Int      @id @default(autoincrement())
+  contenido      String   @db.Text
+  fecha_creacion DateTime @default(now())
 
   // Relación con el Tema al que pertenece (N a 1)
-  temaId         Int
-  tema           ForoTema        @relation(fields: [temaId], references: [id], onDelete: Cascade)
+  temaId Int
+  tema   ForoTema @relation(fields: [temaId], references: [id], onDelete: Cascade)
 
   // Relación con el Usuario que responde (N a 1)
-  usuarioId      Int
-  usuario        Usuario         @relation(fields: [usuarioId], references: [id])
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
 }

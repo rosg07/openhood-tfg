@@ -2,42 +2,37 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Importamos las rutas
+// IMPORTACIONES con require (estilo antiguo)
+const chatRoutes = require('./routes/chat.routes');
 const reparacionesRoutes = require('./routes/reparaciones.routes');
 const presupuestosRoutes = require('./routes/presupuestos.routes');
 const comparadorIARoutes = require('./routes/comparadorIA.routes');
-const authRoutes = require('./routes/auth.routes'); 
+const authRoutes = require('./routes/auth.routes');
 const vehiculoRoutes = require('./routes/vehiculo.routes');
 const foroRoutes = require('./routes/foro.routes');
+const tallerRoutes = require('./routes/talleres.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
-// ==========================================
-// REGISTRO DE RUTAS DE LA API
-// ==========================================
-
-app.get('/', (req, res) => {
-  res.send('¡API de OpenHood funcionando perfectamente!');
-});
+// RUTAS
+app.get('/', (req, res) => res.send('¡API de OpenHood funcionando en modo CommonJS!'));
 
 app.use('/api/reparaciones', reparacionesRoutes);
 app.use('/api/presupuestos', presupuestosRoutes);
 app.use('/api/comparador', comparadorIARoutes);
-app.use('/uploads', express.static('uploads'));
-app.use('/api/foro', foroRoutes);
-
-// Todas las peticiones que empiecen por /api/... irán a su archivo de rutas
-app.use('/api/auth', authRoutes); 
-
-// Se hace visible la carpeta (Esto te vendrá de lujo luego para las fotos de los vehículos con Multer)
+app.use('/api/auth', authRoutes);
 app.use('/api/vehiculos', vehiculoRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/foro', foroRoutes);
+app.use('/api/talleres', tallerRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
-// Levantar el servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
-

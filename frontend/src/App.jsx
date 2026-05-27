@@ -11,6 +11,8 @@ import HistorialPublico from './components/HistorialPublico'
 import Perfil from './pages/Perfil';
 import Foro from './pages/Foro';
 import TemaDetalle from './pages/TemaDetalle';
+import DirectorioTalleres from './pages/DirectorioTalleres';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -27,7 +29,9 @@ function App() {
           <Route path="/vehiculos/historial/:matricula" element={<HistorialPublico />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/foro" element={<Foro />} />
-          <Route path="/foro/:id" element={<TemaDetalle />} />
+          <Route path="/foro/tema/:id" element={<TemaDetalle />} />
+         <Route path="/talleres" element={<DirectorioTalleres />} />
+         <Route path="/dashboard" element={<Dashboard />} />
         </Route>
         {/* RUTA FUERA DEL LAYOUT: 
             Si algún día haces pantalla de Login y NO quieres que tenga 
