@@ -49,7 +49,7 @@ const TemaDetalle = () => {
   const Avatar = ({ nombre }) => {
     const inicial = nombre ? nombre.charAt(0).toUpperCase() : '?';
     return (
-      <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+      <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shrink-0">
         {inicial}
       </div>
     );

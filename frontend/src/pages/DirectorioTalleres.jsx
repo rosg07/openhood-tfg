@@ -45,8 +45,6 @@ const DirectorioTalleres = () => {
   });
 
   // --- FUNCIONES DE CARGA ---
-
-  // Definida con useCallback para evitar re-renders infinitos y poder usarla en varios sitios
   const cargarTalleres = useCallback(async () => {
     try {
       const res = await fetch(
@@ -59,7 +57,6 @@ const DirectorioTalleres = () => {
     }
   }, [ubicacionReferencia, radio]);
 
-  // 1. Geolocalización automática inicial
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -68,18 +65,16 @@ const DirectorioTalleres = () => {
           setUbicacionReferencia(coords);
           setCentroMapa(coords);
         },
-        (error) => console.warn("Error de geolocalización (code 2 es normal en PC):", error)
+        (error) => console.warn("Error de geolocalización:", error)
       );
     }
   }, []);
 
-  // 2. Cargar talleres cuando cambie la ubicación de referencia o el radio
   useEffect(() => {
     cargarTalleres();
   }, [cargarTalleres]);
 
   // --- INTERACCIONES ---
-
   const buscarLugar = async (e) => {
     e.preventDefault();
     if (!direccionManual) return;
@@ -120,11 +115,7 @@ const DirectorioTalleres = () => {
 
       alert("¡Gracias! Taller añadido a la comunidad OpenHood.");
       setMostrarModal(false);
-      
-      // Limpiar formulario completo
       setNuevoTaller({ nombre: "", direccion: "", telefono: "", email: "", descripcion: "" });
-
-      // Refresco automático de la lista sin recargar página
       cargarTalleres();
       
     } catch (error) {
@@ -144,75 +135,105 @@ const DirectorioTalleres = () => {
   );
 
   return (
-    <div style={{ display: "flex", padding: "20px", gap: "20px", height: "92vh", fontFamily: "Arial, sans-serif" }}>
+    // Contenedor principal con fondo suave
+    <div className="flex flex-col lg:flex-row p-4 lg:p-6 gap-6 h-[calc(100vh-80px)] bg-[#F8FAFC]">
       
       {/* PANEL IZQUIERDO: BUSCADOR Y LISTA */}
-      <div style={{ width: "380px", overflowY: "auto", background: "#fff", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }}>
-        <h3 style={{ marginTop: 0 }}>📍 Cambiar Ubicación</h3>
-        <form onSubmit={buscarLugar} style={{ display: "flex", gap: "5px", marginBottom: "20px" }}>
+      <div className="w-full lg:w-105 flex flex-col bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-y-auto">
+        
+        {/* Cambiar Ubicación */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold text-[#1A365D] mb-3 flex items-center gap-2">
+            📍 Cambiar Ubicación
+          </h3>
+          <form onSubmit={buscarLugar} className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Ciudad o dirección..."
+              value={direccionManual}
+              onChange={(e) => setDireccionManual(e.target.value)}
+              className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all text-sm"
+            />
+            <button 
+              type="submit" 
+              className="px-5 bg-[#1A365D] hover:bg-blue-900 text-white font-bold rounded-xl transition-colors shadow-sm"
+            >
+              {cargandoUbi ? "..." : "Ir"}
+            </button>
+          </form>
+        </div>
+
+        <hr className="border-gray-100 mb-6" />
+
+        {/* Filtrar Talleres */}
+        <div className="mb-6">
+          <h3 className="text-lg font-bold text-[#1A365D] mb-3 flex items-center gap-2">
+            🔍 Filtrar Talleres
+          </h3>
           <input
             type="text"
-            placeholder="Ciudad o dirección..."
-            value={direccionManual}
-            onChange={(e) => setDireccionManual(e.target.value)}
-            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid #ddd" }}
+            placeholder="Buscar por nombre..."
+            value={busquedaTaller}
+            onChange={(e) => setBusquedaTaller(e.target.value)}
+            className="w-full p-3 mb-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all text-sm"
           />
-          <button type="submit" style={{ padding: "10px", background: "#007bff", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer" }}>
-            {cargandoUbi ? "..." : "Ir"}
+
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-sm font-bold text-gray-600">Radio de búsqueda:</label>
+            <span className="text-sm font-bold text-[#00B4D8] bg-[#e6f7fa] px-2 py-1 rounded-lg">{radio} km</span>
+          </div>
+          <input
+            type="range"
+            min="1"
+            max="50"
+            value={radio}
+            onChange={(e) => setRadio(e.target.value)}
+            className="w-full mb-6 accent-[#00B4D8]"
+          />
+
+          <button
+            onClick={() => setMostrarModal(true)}
+            className="w-full py-3 bg-[#00B4D8] hover:bg-cyan-500 text-white font-bold rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          >
+            <span>➕</span> Recomendar un Taller
           </button>
-        </form>
+        </div>
 
-        <hr style={{ border: "0.5px solid #eee", marginBottom: "20px" }} />
-
-        <h3>🔍 Filtrar Talleres</h3>
-        <input
-          type="text"
-          placeholder="Nombre del taller..."
-          value={busquedaTaller}
-          onChange={(e) => setBusquedaTaller(e.target.value)}
-          style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "15px", boxSizing: "border-box" }}
-        />
-
-        <label style={{ fontSize: "14px", fontWeight: "bold" }}>Radio: {radio} km</label>
-        <input
-          type="range"
-          min="1"
-          max="50"
-          value={radio}
-          onChange={(e) => setRadio(e.target.value)}
-          style={{ width: "100%", marginBottom: "20px" }}
-        />
-
-        <button
-          onClick={() => setMostrarModal(true)}
-          style={{ width: "100%", padding: "12px", background: "#28a745", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", marginBottom: "15px", fontWeight: "bold" }}
-        >
-          ➕ Recomendar un Taller
-        </button>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {talleresFiltrados.map((taller) => (
-            <div
-              key={taller.id}
-              onClick={() => setCentroMapa([taller.latitud, taller.longitud])}
-              style={{ padding: "15px", borderRadius: "12px", border: "1px solid #eee", cursor: "pointer", background: "#fdfdfd" }}
-            >
-              <h4 style={{ margin: "0", color: "#007bff" }}>{taller.nombre}</h4>
-              <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>{taller.direccion}</p>
-              <button
-                onClick={(e) => { e.stopPropagation(); abrirGoogleMaps(taller.latitud, taller.longitud); }}
-                style={{ marginTop: "10px", width: "100%", padding: "8px", background: "#28a745", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
+        {/* Lista de Resultados */}
+        <div className="flex flex-col gap-3 flex-1 overflow-y-auto pr-1">
+          {talleresFiltrados.length > 0 ? (
+            talleresFiltrados.map((taller) => (
+              <div
+                key={taller.id}
+                onClick={() => setCentroMapa([taller.latitud, taller.longitud])}
+                className="p-4 bg-white rounded-xl border border-gray-200 cursor-pointer group hover:border-[#00B4D8] hover:shadow-md hover:-translate-y-1 transition-all"
               >
-                🚗 Cómo llegar
-              </button>
+                <h4 className="m-0 text-lg font-bold text-[#1A365D] group-hover:text-[#00B4D8] transition-colors">
+                  {taller.nombre}
+                </h4>
+                <p className="mt-1 mb-3 text-xs text-gray-500 line-clamp-2">
+                  {taller.direccion}
+                </p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); abrirGoogleMaps(taller.latitud, taller.longitud); }}
+                  className="w-full py-2 bg-gray-50 group-hover:bg-[#1A365D] text-gray-700 group-hover:text-white font-semibold text-sm rounded-lg border border-gray-200 group-hover:border-[#1A365D] transition-colors flex justify-center items-center gap-2"
+                >
+                  🚗 Cómo llegar
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-8 px-4 text-gray-500 border-2 border-dashed border-gray-200 rounded-xl">
+              <p className="mb-2 text-2xl">🗺️</p>
+              <p className="text-sm">No se encontraron talleres en esta zona. ¡Anímate a recomendar el primero!</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
       {/* PANEL DERECHO: MAPA */}
-      <div style={{ flex: 1, borderRadius: "15px", overflow: "hidden", border: "1px solid #ddd", filter: "grayscale(0.1) contrast(1.05)" }}>
-        <MapContainer center={centroMapa} zoom={13} style={{ height: "100%", width: "100%" }}>
+      <div className="flex-1 rounded-2xl overflow-hidden border border-gray-200 shadow-sm relative z-0">
+        <MapContainer center={centroMapa} zoom={13} className="h-full w-full">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <RecenterMap coords={centroMapa} />
 
@@ -226,19 +247,21 @@ const DirectorioTalleres = () => {
               iconAnchor: [12, 41],
             })}
           >
-            <Popup>Buscando desde aquí</Popup>
+            <Popup>
+              <span className="font-bold text-[#1A365D]">Punto de búsqueda</span>
+            </Popup>
           </Marker>
 
-          {/* Marcadores de Talleres (Azules por defecto) */}
+          {/* Marcadores de Talleres (Azules) */}
           {talleresFiltrados.map((taller) => (
             <Marker key={taller.id} position={[taller.latitud, taller.longitud]}>
               <Popup>
-                <div style={{ textAlign: "center" }}>
-                  <strong>{taller.nombre}</strong><br />
-                  <span style={{ fontSize: "11px" }}>{taller.telefono}</span><br />
+                <div className="text-center p-1">
+                  <strong className="text-[#1A365D] block mb-1">{taller.nombre}</strong>
+                  <span className="text-xs text-gray-600 block mb-2">{taller.telefono}</span>
                   <button
                     onClick={() => abrirGoogleMaps(taller.latitud, taller.longitud)}
-                    style={{ marginTop: "5px", background: "none", border: "none", color: "#007bff", textDecoration: "underline", cursor: "pointer" }}
+                    className="text-xs font-bold text-[#00B4D8] hover:text-[#1A365D] underline transition-colors"
                   >
                     Ruta en Google Maps
                   </button>
@@ -251,42 +274,58 @@ const DirectorioTalleres = () => {
 
       {/* MODAL DE RECOMENDACIÓN */}
       {mostrarModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-          <div style={{ background: "#fff", padding: "25px", borderRadius: "15px", width: "450px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}>
-            <h3 style={{ marginTop: 0 }}>Recomendar Taller</h3>
-            <form onSubmit={manejarRecomendacion} style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "15px" }}>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-[#1A365D] m-0">Recomendar Taller</h3>
+              <button onClick={() => setMostrarModal(false)} className="text-gray-400 hover:text-red-500 transition-colors text-xl font-bold">&times;</button>
+            </div>
+            
+            <form onSubmit={manejarRecomendacion} className="flex flex-col gap-4">
               <input
-                type="text" placeholder="Nombre del taller *" value={nuevoTaller.nombre}
+                type="text" placeholder="Nombre del taller *" value={nuevoTaller.nombre} required
                 onChange={(e) => setNuevoTaller({ ...nuevoTaller, nombre: e.target.value })}
-                required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all"
               />
               <input
-                type="text" placeholder="Dirección completa *" value={nuevoTaller.direccion}
+                type="text" placeholder="Dirección completa *" value={nuevoTaller.direccion} required
                 onChange={(e) => setNuevoTaller({ ...nuevoTaller, direccion: e.target.value })}
-                required style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all"
               />
-              <div style={{ display: "flex", gap: "10px" }}>
+              <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text" placeholder="Teléfono" value={nuevoTaller.telefono}
                   onChange={(e) => setNuevoTaller({ ...nuevoTaller, telefono: e.target.value })}
-                  style={{ flex: 1, padding: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+                  className="w-full flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all"
                 />
                 <input
                   type="email" placeholder="Email" value={nuevoTaller.email}
                   onChange={(e) => setNuevoTaller({ ...nuevoTaller, email: e.target.value })}
-                  style={{ flex: 1, padding: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+                  className="w-full flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all"
                 />
               </div>
               <textarea
-                placeholder="¿Por qué lo recomiendas? (Descripción)"
+                placeholder="¿Por qué lo recomiendas? (Especialidad, trato, precio...)"
                 value={nuevoTaller.descripcion}
                 onChange={(e) => setNuevoTaller({ ...nuevoTaller, descripcion: e.target.value })}
-                rows="3" style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "5px", resize: "none", fontFamily: "inherit" }}
+                rows="3" 
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] outline-none transition-all resize-none"
               />
-              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                <button type="button" onClick={() => setMostrarModal(false)} style={{ flex: 1, padding: "10px", background: "#f1f1f1", border: "none", borderRadius: "5px", cursor: "pointer" }}>Cancelar</button>
-                <button type="submit" disabled={enviandoTaller} style={{ flex: 1, padding: "10px", background: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>
-                  {enviandoTaller ? "Guardando..." : "Publicar recomendación"}
+              
+              <div className="flex gap-3 mt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setMostrarModal(false)} 
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={enviandoTaller} 
+                  className="flex-1 py-3 bg-[#00B4D8] hover:bg-cyan-500 text-white font-bold rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  {enviandoTaller ? "Guardando..." : "Publicar"}
                 </button>
               </div>
             </form>

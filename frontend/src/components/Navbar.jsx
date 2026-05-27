@@ -18,60 +18,59 @@ const Navbar = () => {
   };
 
   return (
-    // Aplicamos el bg-white y texto blanco (aunque los links son azules)
-    <nav className="bg-white text-white shadow-md sticky top-0 z-40">
+    // Aplicamos fondo blanco translúcido con desenfoque (Glassmorphism) y un borde sutil
+    <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm sticky top-0 z-40 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-18 items-center">
           
-          <Link to="/vehiculos" className="flex items-center gap-3 hover:opacity-80 transition">
-            {/* El icono / imagen */}
-            <img src={logo} alt="Icono OpenHood" className="h-10 object-contain rounded-xl bg-white p-1" />
-            
-            {/* El texto aplicando tu nueva clase CSS */}
-            <span className="text-2xl tracking-tight font-montserrat text-black">
-              Openhood
+          {/* LOGO Y MARCA */}
+          <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition group">
+            <img 
+              src={logo} 
+              alt="Icono OpenHood" 
+              className="h-11 object-contain transition-transform group-hover:scale-105" 
+            />
+            <span className="text-2xl font-bold tracking-tight text-[#1A365D]">
+              Open<span className="text-[#00B4D8]">Hood</span>
             </span>
           </Link>
 
-          {/* Menú derecho: Enlaces y Botón de Auth */}
-          <div className="flex items-center gap-6">
+          {/* MENÚ DERECHO: ENLACES Y BOTONES */}
+          <div className="flex items-center gap-2 sm:gap-6">
             
             {/* Solo mostramos los enlaces si está logueado */}
             {isLoggedIn && (
-              <>
-                <Link to="/vehiculos" className="text-blue-600 hover:text-blue-700 font-medium transition">
+              <div className="hidden md:flex items-center gap-6 mr-4">
+                <Link to="/vehiculos" className="text-[#1A365D] hover:text-[#00B4D8] font-semibold transition-colors text-sm">
                   Mis Vehículos
                 </Link>
-                <Link to="/marketplace" className="text-blue-600 hover:text-blue-700 font-medium transition">
+                <Link to="/marketplace" className="text-[#1A365D] hover:text-[#00B4D8] font-semibold transition-colors text-sm">
                   Marketplace
                 </Link>
-                <Link to="/foro" className="text-blue-600 hover:text-blue-700 font-medium transition">
+                <Link to="/foro" className="text-[#1A365D] hover:text-[#00B4D8] font-semibold transition-colors text-sm">
                   Foro
                 </Link>
-                
-                {/* NUEVO ENLACE AL DIRECTORIO DE TALLERES */}
-                <Link to="/talleres" className="text-blue-600 hover:text-blue-700 font-medium transition">
+                <Link to="/talleres" className="text-[#1A365D] hover:text-[#00B4D8] font-semibold transition-colors text-sm">
                   Talleres
                 </Link>
-
-                <Link to="/perfil" className="text-blue-600 hover:text-blue-700 font-medium transition">
+                <Link to="/perfil" className="text-[#1A365D] hover:text-[#00B4D8] font-semibold transition-colors text-sm">
                   Mi Perfil
                 </Link>
-              </>
+              </div>
             )}
 
-            {/* Renderizado condicional del botón de sesión */}
+            {/* BOTONES DE AUTENTICACIÓN */}
             {isLoggedIn ? (
               <button 
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm"
+                className="text-gray-500 hover:text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
               >
                 Cerrar sesión
               </button>
             ) : (
               <Link 
                 to="/login"
-                className="bg-gray-100 text-blue-600 hover:bg-gray-200 px-4 py-2 rounded-lg font-medium transition shadow-sm"
+                className="bg-[#00B4D8] hover:bg-cyan-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
               >
                 Iniciar sesión
               </Link>

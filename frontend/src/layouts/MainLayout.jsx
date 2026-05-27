@@ -10,7 +10,7 @@ const Layout = () => {
       <Navbar />
 
       {/* 2. El contenido de la página ocupa el espacio restante */}
-      <main className="flex-grow">
+      <main className="grow">
         <Outlet />
       </main>
 

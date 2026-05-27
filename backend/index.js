@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth.routes');
 const vehiculoRoutes = require('./routes/vehiculo.routes');
 const foroRoutes = require('./routes/foro.routes');
 const tallerRoutes = require('./routes/talleres.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use('/api/vehiculos', vehiculoRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/foro', foroRoutes);
 app.use('/api/talleres', tallerRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
