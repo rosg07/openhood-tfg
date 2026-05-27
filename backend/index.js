@@ -16,7 +16,15 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173', // Para seguir trabajando en local
+    'https://openhood-tfg.vercel.app' // Tu frontend en Vercel (asegúrate de que no tenga una barra / al final)
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Fundamental para peticiones de login/auth
+}));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
